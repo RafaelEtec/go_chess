@@ -39,6 +39,9 @@ type Board struct {
 type Piece struct {
 	img *ebiten.Image
 
+	pieceType string
+	color     string
+
 	X int
 	Y int
 
@@ -56,6 +59,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	opts := ebiten.DrawImageOptions{}
 
 	drawBoard(g, opts, screen)
+	drawPieces(g, opts, screen)
+}
+
+func drawPieces(g *Game, opts ebiten.DrawImageOptions, screen *ebiten.Image) {
+
 }
 
 func drawBoard(g *Game, opts ebiten.DrawImageOptions, screen *ebiten.Image) {
@@ -105,14 +113,14 @@ func main() {
 	game := &Game{
 		board: &Board{
 			pieces: []*Piece{
+				{pieceType: "br"}, {pieceType: "bn"}, {pieceType: "bb"}, {pieceType: "bq"}, {pieceType: "bk"}, {pieceType: "bb"}, {pieceType: "bn"}, {pieceType: "br"},
+				{pieceType: "bp"}, {pieceType: "bp"}, {pieceType: "bp"}, {pieceType: "bp"}, {pieceType: "bp"}, {pieceType: "bp"}, {pieceType: "bp"}, {pieceType: "bp"},
 				{}, {}, {}, {}, {}, {}, {}, {},
 				{}, {}, {}, {}, {}, {}, {}, {},
 				{}, {}, {}, {}, {}, {}, {}, {},
 				{}, {}, {}, {}, {}, {}, {}, {},
-				{}, {}, {}, {}, {}, {}, {}, {},
-				{}, {}, {}, {}, {}, {}, {}, {},
-				{}, {}, {}, {}, {}, {}, {}, {},
-				{}, {}, {}, {}, {}, {}, {}, {},
+				{pieceType: "wp"}, {pieceType: "wp"}, {pieceType: "wp"}, {pieceType: "wp"}, {pieceType: "wp"}, {pieceType: "wp"}, {pieceType: "wp"}, {pieceType: "wp"},
+				{pieceType: "wr"}, {pieceType: "wn"}, {pieceType: "wb"}, {pieceType: "wq"}, {pieceType: "wk"}, {pieceType: "wb"}, {pieceType: "wn"}, {pieceType: "wr"},
 			},
 		},
 	}
