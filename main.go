@@ -5,50 +5,45 @@ import (
 	"image/color"
 	"log"
 
-	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 const (
-	SCREEN_WIDTH  = 440
-	SCREEN_HEIGHT = 400
+	SCREEN_WIDTH  = 256
+	SCREEN_HEIGHT = 280
 
-	BOARD_WIDTH  = 400
-	BOARD_HEIGHT = 400
+	FRAME_OX     = 0
+	FRAME_OY     = 0
+	FRAME_WIDTH  = 32
+	FRAME_HEIGHT = 32
+	W            = 32
 
-	FRAME_WIDTH = 32
+	BOARD_WIDTH  = 256
+	BOARD_HEIGHT = 256
 
 	COLS = 8
 	ROWS = 8
 
-	MESSAGE_WHOPLAYS = "Player %d turn"
+	MESSAGE_WHOPLAYS = "Player %d to move"
 )
 
 type Game struct {
-	state   int
-	message string
-
-	whoplay int
-
 	board *Board
 }
 
 type Board struct {
-	Pieces []*Piece
+	pieces []*Piece
 }
 
 type Piece struct {
-	Img *ebiten.Image
-
-	Color int
+	img *ebiten.Image
 
 	X int
 	Y int
 
-	C  int
-	R  int
-	PC int
-	PR int
+	C int
+	R int
 }
 
 func (g *Game) Update() error {
@@ -56,29 +51,49 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.Fill(color.RGBA{0, 0, 0, 255})
+	screen.Fill(color.RGBA{180, 180, 180, 255})
+
 	opts := ebiten.DrawImageOptions{}
 
-	drawBoard(opts, screen)
+	drawBoard(g, opts, screen)
 }
 
-func drawBoard(opts ebiten.DrawImageOptions, screen *ebiten.Image) {
-	light_tile, err := ebitenutil.NewImageFromURL("https://github.com/RafaelEtec/go_chess/blob/4ed5aef3d0bfe7485eb1bd0069a24ba9c528773b/assets/board/light_tile.png?raw=true")
+func drawBoard(g *Game, opts ebiten.DrawImageOptions, screen *ebiten.Image) {
+	light_tile, _, err := ebitenutil.NewImageFromFile("assets/board/light_tile.png")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for i := 0; i < COLS; i++ {
-		for j := 0; j < ROWS; j++ {
-			opts.GeoM.Translate(float64(i)*FRAME_WIDTH, float64(j)*FRAME_WIDTH)
+	dark_tile, _, err := ebitenutil.NewImageFromFile("assets/board/dark_tile.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tileC := 0
+	tile := light_tile
+	for c := 0; c < COLS; c++ {
+		for r := 0; r < ROWS; r++ {
+			if tileC%2 == 0 {
+				tile = light_tile
+			} else {
+				tile = dark_tile
+			}
+
+			fox, foy, fw, fh := FRAME_OX, FRAME_OY, FRAME_WIDTH, FRAME_HEIGHT
+			foy += 32 * 0
+			fh *= 0 + 1
+
+			opts.GeoM.Translate(float64(c)*W, float64(r)*W)
 			screen.DrawImage(
-				light_tile.SubImage(
-					image.Rect(32, 32, 0, 0),
+				tile.SubImage(
+					image.Rect(fox, foy, fw, fh),
 				).(*ebiten.Image),
 				&opts,
 			)
 			opts.GeoM.Reset()
+			tileC++
 		}
+		tileC++
 	}
 }
 
@@ -87,11 +102,39 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	g := &Game{}
+	game := &Game{
+		board: &Board{
+			pieces: []*Piece{
+				{}, {}, {}, {}, {}, {}, {}, {},
+				{}, {}, {}, {}, {}, {}, {}, {},
+				{}, {}, {}, {}, {}, {}, {}, {},
+				{}, {}, {}, {}, {}, {}, {}, {},
+				{}, {}, {}, {}, {}, {}, {}, {},
+				{}, {}, {}, {}, {}, {}, {}, {},
+				{}, {}, {}, {}, {}, {}, {}, {},
+				{}, {}, {}, {}, {}, {}, {}, {},
+			},
+		},
+	}
+
+	createBoard(game)
 
 	ebiten.SetWindowSize(SCREEN_WIDTH*2, SCREEN_HEIGHT*2)
-	ebiten.SetWindowTitle("CHESS by Rafael Goulart")
-	if err := ebiten.RunGame(g); err != nil {
+	ebiten.SetWindowTitle("Chess by Rafael Goulart")
+	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func createBoard(g *Game) {
+	piece := 0
+	for c := 0; c < COLS; c++ {
+		for r := 0; r < ROWS; r++ {
+			g.board.pieces[piece].X = c * W
+			g.board.pieces[piece].Y = r * W
+			g.board.pieces[piece].C = c * W
+			g.board.pieces[piece].R = r * W
+			piece++
+		}
 	}
 }
