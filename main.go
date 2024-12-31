@@ -10,17 +10,17 @@ import (
 )
 
 const (
-	SCREEN_WIDTH  = 256
-	SCREEN_HEIGHT = 280
+	SCREEN_WIDTH  = BOARD_WIDTH
+	SCREEN_HEIGHT = BOARD_HEIGHT
 
 	FRAME_OX     = 0
 	FRAME_OY     = 0
-	FRAME_WIDTH  = 32
-	FRAME_HEIGHT = 32
-	W            = 32
+	FRAME_WIDTH  = 48
+	FRAME_HEIGHT = 48
+	W            = 48
 
-	BOARD_WIDTH  = 256
-	BOARD_HEIGHT = 256
+	BOARD_WIDTH  = W * 8
+	BOARD_HEIGHT = W * 8
 
 	COLS = 8
 	ROWS = 8
@@ -63,7 +63,26 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func drawPieces(g *Game, opts ebiten.DrawImageOptions, screen *ebiten.Image) {
+	count := 0
+	for r := 0; r < ROWS; r++ {
+		for c := 0; c < COLS; c++ {
+			tile := g.board.pieces[count]
 
+			if tile.pieceType != "blank" {
+				fox, foy, fw, fh := FRAME_OX, FRAME_OY, FRAME_WIDTH, FRAME_HEIGHT
+
+				opts.GeoM.Translate(float64(c)*W+3, float64(r)*W+6)
+				screen.DrawImage(
+					tile.img.SubImage(
+						image.Rect(fox, foy, fw, fh),
+					).(*ebiten.Image),
+					&opts,
+				)
+				opts.GeoM.Reset()
+			}
+			count++
+		}
+	}
 }
 
 func drawBoard(g *Game, opts ebiten.DrawImageOptions, screen *ebiten.Image) {
@@ -88,8 +107,6 @@ func drawBoard(g *Game, opts ebiten.DrawImageOptions, screen *ebiten.Image) {
 			}
 
 			fox, foy, fw, fh := FRAME_OX, FRAME_OY, FRAME_WIDTH, FRAME_HEIGHT
-			foy += 32 * 0
-			fh *= 0 + 1
 
 			opts.GeoM.Translate(float64(c)*W, float64(r)*W)
 			screen.DrawImage(
@@ -115,10 +132,10 @@ func main() {
 			pieces: []*Piece{
 				{pieceType: "br"}, {pieceType: "bn"}, {pieceType: "bb"}, {pieceType: "bq"}, {pieceType: "bk"}, {pieceType: "bb"}, {pieceType: "bn"}, {pieceType: "br"},
 				{pieceType: "bp"}, {pieceType: "bp"}, {pieceType: "bp"}, {pieceType: "bp"}, {pieceType: "bp"}, {pieceType: "bp"}, {pieceType: "bp"}, {pieceType: "bp"},
-				{}, {}, {}, {}, {}, {}, {}, {},
-				{}, {}, {}, {}, {}, {}, {}, {},
-				{}, {}, {}, {}, {}, {}, {}, {},
-				{}, {}, {}, {}, {}, {}, {}, {},
+				{pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"},
+				{pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"},
+				{pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"},
+				{pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"}, {pieceType: "blank"},
 				{pieceType: "wp"}, {pieceType: "wp"}, {pieceType: "wp"}, {pieceType: "wp"}, {pieceType: "wp"}, {pieceType: "wp"}, {pieceType: "wp"}, {pieceType: "wp"},
 				{pieceType: "wr"}, {pieceType: "wn"}, {pieceType: "wb"}, {pieceType: "wq"}, {pieceType: "wk"}, {pieceType: "wb"}, {pieceType: "wn"}, {pieceType: "wr"},
 			},
@@ -135,13 +152,95 @@ func main() {
 }
 
 func createBoard(g *Game) {
+	bp, _, err := ebitenutil.NewImageFromFile("assets/pieces/black_pawn.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	wp, _, err := ebitenutil.NewImageFromFile("assets/pieces/white_pawn.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	br, _, err := ebitenutil.NewImageFromFile("assets/pieces/black_rook.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	wr, _, err := ebitenutil.NewImageFromFile("assets/pieces/white_rook.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bb, _, err := ebitenutil.NewImageFromFile("assets/pieces/black_bishop.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	wb, _, err := ebitenutil.NewImageFromFile("assets/pieces/white_bishop.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bn, _, err := ebitenutil.NewImageFromFile("assets/pieces/black_knight.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	wn, _, err := ebitenutil.NewImageFromFile("assets/pieces/white_knight.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bq, _, err := ebitenutil.NewImageFromFile("assets/pieces/black_queen.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	wq, _, err := ebitenutil.NewImageFromFile("assets/pieces/white_queen.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bk, _, err := ebitenutil.NewImageFromFile("assets/pieces/black_king.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	wk, _, err := ebitenutil.NewImageFromFile("assets/pieces/white_king.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	piece := 0
 	for c := 0; c < COLS; c++ {
 		for r := 0; r < ROWS; r++ {
-			g.board.pieces[piece].X = c * W
-			g.board.pieces[piece].Y = r * W
-			g.board.pieces[piece].C = c * W
-			g.board.pieces[piece].R = r * W
+			tile := g.board.pieces[piece]
+			switch tile.pieceType {
+			case "bp":
+				tile.img = bp
+			case "wp":
+				tile.img = wp
+			case "br":
+				tile.img = br
+			case "wr":
+				tile.img = wr
+			case "bb":
+				tile.img = bb
+			case "wb":
+				tile.img = wb
+			case "bn":
+				tile.img = bn
+			case "wn":
+				tile.img = wn
+			case "bq":
+				tile.img = bq
+			case "wq":
+				tile.img = wq
+			case "bk":
+				tile.img = bk
+			case "wk":
+				tile.img = wk
+			}
+
+			tile.X = c * W
+			tile.Y = r * W
+			tile.C = c
+			tile.R = r
 			piece++
 		}
 	}
